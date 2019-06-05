@@ -123,5 +123,5 @@ fn main() {
     cmd.arg("-DARM_MATH_CM4");
     cmd.arg("-DARM_CMSIS_NN_M4");
 
-    cmd.output().expect("failed to build tensorflow");
+    assert!(cmd.status().expect("failed to build cmsis").success());
 }
