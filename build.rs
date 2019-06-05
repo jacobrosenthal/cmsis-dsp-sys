@@ -1,5 +1,4 @@
 use std::env;
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -53,11 +52,11 @@ fn main() {
     println!("cargo:rustc-link-lib=static={}", lib);
 
     // Link against libm
-    println!(
-        "cargo:rustc-link-search={}",
-        sysroot_dir.join("lib/thumb").join(libc).display()
-    );
-    println!("cargo:rustc-link-lib=static=m");
+    // println!(
+    //     "cargo:rustc-link-search={}",
+    //     sysroot_dir.join("lib/thumb").join(libc).display()
+    // );
+    // println!("cargo:rustc-link-lib=static=m");
 
     let outdir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
@@ -72,6 +71,9 @@ fn main() {
 
     cmd.arg("--output");
     cmd.arg(outdir.join("bindings.rs"));
+
+    cmd.arg("--blacklist-function");
+    cmd.arg("sqrtf");
 
     cmd.arg("--");
 
@@ -120,8 +122,9 @@ fn main() {
     cmd.arg("-nostdlib");
     // cmd.arg("-g");
     // cmd.arg("-Os");
-    cmd.arg("-DARM_MATH_CM4");
-    cmd.arg("-DARM_CMSIS_NN_M4");
+    //todo dont hardcode
+    cmd.arg("-DARM_MATH_CM3");
+    cmd.arg("-DARM_CMSIS_NN_M3");
 
     assert!(cmd.status().expect("failed to build cmsis").success());
 }

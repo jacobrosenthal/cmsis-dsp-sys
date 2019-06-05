@@ -14,10 +14,9 @@ So we need cmsis bindings right now.
 
 Rust.. is.. complicated. Its very difficult or impossible to script any of this because cargo pollutes no_std builds. [1](https://github.com/rust-lang/cargo/issues/2589) [2](https://github.com/rust-lang/cargo/issues/2644) [3](https://github.com/rust-lang/cargo/issues/4866) [4](https://github.com/rust-lang/cargo/issues/6571) 
 
-Git.. is also.. complicated. The [git archive command doesnt store appear to store git lfs files for releases](https://github.com/isaacs/github/issues/1392) so we cant just wget the CMSIS release archive. Instead you must use git clone with git lfs installed.
+Git.. is also.. complicated. The [git archive command doesnt appear to store git lfs files for releases](https://github.com/isaacs/github/issues/1392) so we cant just wget the CMSIS release archive. Instead you must use git clone with git lfs installed and then provide it as a CMSIS_PATH variable.
 
-Cross compiling.. is also.. complicated. You must have a cross compile toolchain and provide it as a sysroot variable.
-Install a toolchain as described in the rust embedded book [like arm-none-eabi-gcc for macosx here](https://rust-embedded.github.io/book/intro/install.html). If successful you should be able to find your sysroot:
+Cross compiling.. is also.. complicated. You must have a cross compile toolchain and provide it as a SYSROOT_PATH variable. Presumably you already installed a toolchain as described in the rust embedded book [like arm-none-eabi-gcc for macosx here](https://rust-embedded.github.io/book/intro/install.html). If successful you should be able to find your sysroot like:
 ```
 $ arm-none-eabi-gcc -print-sysroot
 /usr/local/Cellar/gcc-arm-none-eabi/20180627/bin/../arm-none-eabi
