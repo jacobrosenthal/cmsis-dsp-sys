@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["Jacob Rosenthal <jacobrosenthal@gmail.com>"]
 edition = "2018"
 links = "cmsis-dsp"
-
-[dependencies]
-cty = "0.2.0"
-
+license-file = "LICENSE.md"
+description = "Rust bindings to the static arm cmsis math libraries"
+readme = "README.md"
+repository = "https://github.com/jacobrosenthal/cmsis-dsp-sys"
+categories = ["embedded", "hardware-support", "no-std", "math", "ffi"]
+keywords = ["dsp"]

@@ -6,125 +6,87 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=wrapper.h");
 
-    let sysroot_path = env::var("SYSROOT_PATH").expect(
-        "You need to set the environment variable 'SYSROOT_PATH' to point to an installation of the a C library (e.g. /usr/include/newlib)");
+    let manifest = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let outdir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
-    let sysroot_dir = Path::new(&sysroot_path);
+    // todo pure rust or make sure to use cross platform commands
+    Command::new("curl")
+        .args(&[
+            "-L",
+            "https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack",
+            "--output",
+            outdir.join("CMSIS.zip").to_str().unwrap(),
+        ])
+        .output()
+        .expect("curl CMSIS failed");
 
-    let cmsis_path = env::var("CMSIS_PATH").expect(
-        "You need to set the environment variable 'CMSIS_PATH' to point to a git lfs clone of https://github.com/ARM-software/CMSIS_5");
+    Command::new("unzip")
+        .args(&[
+            outdir.join("CMSIS.zip").to_str().unwrap(),
+            "-d",
+            outdir.join("CMSIS").to_str().unwrap(),
+        ])
+        .output()
+        .expect("unzip CMSIS failed");
 
-    let cmsis_dir = Path::new(&cmsis_path);
+    let manifest_dir = Path::new(&manifest);
 
+    // * Here is the list of pre-built libraries :
+    // * - arm_cortexM7lfdp_math.lib (Cortex-M7, Little endian, Double Precision Floating Point Unit)
+    // * - arm_cortexM7lfsp_math.lib (Cortex-M7, Little endian, Single Precision Floating Point Unit)
+    // * - arm_cortexM7l_math.lib (Cortex-M7, Little endian)
+    // * - arm_cortexM4lf_math.lib (Cortex-M4, Little endian, Floating Point Unit)
+    // * - arm_cortexM4l_math.lib (Cortex-M4, Little endian)
+    // * - arm_cortexM3l_math.lib (Cortex-M3, Little endian)
+    // * - arm_cortexM0l_math.lib (Cortex-M0 / Cortex-M0+, Little endian)
+    // * - arm_ARMv8MBLl_math.lib (Armv8-M Baseline, Little endian)
+    // * - arm_ARMv8MMLl_math.lib (Armv8-M Mainline, Little endian)
+    // * - arm_ARMv8MMLlfsp_math.lib (Armv8-M Mainline, Little endian, Single Precision Floating Point Unit)
+    // * - arm_ARMv8MMLld_math.lib (Armv8-M Mainline, Little endian, DSP instructions)
+    // * - arm_ARMv8MMLldfsp_math.lib (Armv8-M Mainline, Little endian, DSP instructions, Single Precision Floating Point Unit)
     let target = env::var("TARGET").unwrap();
-    // let (lib, arch) = ("arm_cortexM4lf_math", "__ARM_ARCH_7EM__");
-    let (lib, arch, libc) = match target.as_ref() {
+    let lib = match target.as_ref() {
         //Bare Cortex-M0, M0+, M1
-        "thumbv6m-none-eabi" => ("arm_cortexM0l_math", "__ARM_ARCH_6M__", "v6-m"),
+        "thumbv6m-none-eabi" => "arm_cortexM0l_math",
         //Bare Cortex-M3
-        "thumbv7m-none-eabi" => ("arm_cortexM3l_math", "__ARM_ARCH_7M__", "v7-m"),
+        "thumbv7m-none-eabi" => "arm_cortexM3l_math",
         //Bare Cortex-M4, M7
-        "thumbv7em-none-eabi" => ("arm_cortexM4l_math", "__ARM_ARCH_7EM__", "v7e-m"),
-        //todo .. when
-        // "thumbv7em-none-eabi" => "arm_cortexM7l_math",
+        "thumbv7em-none-eabi" => "arm_cortexM4l_math",
         //Bare Cortex-M4F, M7F, FPU, hardfloat
-        //todo this libc might be wrong?
-        "thumbv7em-none-eabihf" => ("arm_cortexM4lf_math", "__ARM_ARCH_7EM__", "v7e-m"),
-        //todo .. when
-        // "thumbv7em-none-eabihf" => "arm_cortexM7lfdp_math",
-        // "thumbv7em-none-eabihf" => "arm_cortexM7lfsp_math",
-        //// https://github.com/rust-embedded/wg/issues/88 ??
-        "thumbv8m.base-none-eabi" => ("arm_ARMv8MBLl_math", "__ARM_ARCH_8M_BASE__", "v8-m.base"),
-        "thumbv8m.main-none-eabi" => ("arm_ARMv8MMLl_math", "__ARM_ARCH_8M_MAIN__", "v8-m.main"),
-        //todo .. when
-        // "thumbv8m.main-none-eabi" => "arm_ARMv8MMLld_math",
-        "thumbv8m.main-none-eabihf" => {
-            ("arm_ARMv8MMLlfsp_math", "__ARM_ARCH_8M_MAIN__", "v8-m.main")
-        }
+        "thumbv7em-none-eabihf" => "arm_cortexM4lf_math",
         _ => panic!("no known arm math library for target {}", target),
     };
 
-    // Link against prebuilt cmsis dsp
+    // Link against prebuilt cmsis math
     println!(
         "cargo:rustc-link-search={}",
-        cmsis_dir.join("CMSIS/DSP/Lib/GCC").display()
+        outdir.join("CMSIS/CMSIS/DSP/Lib/GCC").display()
     );
     println!("cargo:rustc-link-lib=static={}", lib);
 
-    // Link against libm
-    // println!(
-    //     "cargo:rustc-link-search={}",
-    //     sysroot_dir.join("lib/thumb").join(libc).display()
-    // );
-    // println!("cargo:rustc-link-lib=static=m");
-
-    let outdir = PathBuf::from(env::var("OUT_DIR").unwrap());
-
     let mut cmd = Command::new("bindgen");
+    //bindgen args
     cmd.arg("wrapper.h");
     cmd.arg("--verbose");
-
     cmd.arg("--no-derive-default");
     cmd.arg("--ctypes-prefix=cty");
-
     cmd.arg("--use-core");
-
     cmd.arg("--output");
     cmd.arg(outdir.join("bindings.rs"));
 
-    cmd.arg("--blacklist-function");
-    cmd.arg("sqrtf");
-
+    //clang args
     cmd.arg("--");
-
-    cmd.arg("-target");
-    cmd.arg(target);
-
-    cmd.arg(format!("-I{}", sysroot_dir.join("include").display()));
-
-    //cmsis stuff
-    cmd.arg(format!("-D{}=1", arch));
-
+    cmd.arg(format!("-I{}", manifest_dir.join("include").display()));
     cmd.arg(format!(
         "-I{}",
-        cmsis_dir.join("CMSIS/Core/Include").display()
+        outdir.join("CMSIS/CMSIS/Core/Include").display()
     ));
-
     cmd.arg(format!(
         "-I{}",
-        cmsis_dir.join("CMSIS/DSP/Include").display()
+        outdir.join("CMSIS/CMSIS/DSP/Include").display()
     ));
+    cmd.arg("-nostdinc");
 
-    // cmd.arg("-DNDEBUG");
-    // cmd.arg("-g");
-    // cmd.arg("-O3");
-    // cmd.arg("-fno-rtti");
-    // cmd.arg("-fmessage-length=0");
-    // cmd.arg("-fno-exceptions");
-    // cmd.arg("-fno-unwind-tables");
-    cmd.arg("-fno-builtin");
-    cmd.arg("-ffunction-sections");
-    cmd.arg("-fdata-sections");
-    // cmd.arg("-funsigned-char");
-    // cmd.arg("-MMD");
-    // cmd.arg("-mcpu=cortex-m3");
-    // cmd.arg("-mthumb");
-    // cmd.arg("-Wvla");
-    // cmd.arg("-Wall");
-    // cmd.arg("-Wextra");
-    // cmd.arg("-Wno-unused-parameter");
-    // cmd.arg("-Wno-missing-field-initializers");
-    // cmd.arg("-Wno-write-strings");
-    // cmd.arg("-Wno-sign-compare");
-    // cmd.arg("-fno-delete-null-pointer-checks");
-    // cmd.arg("-fomit-frame-pointer");
-    // cmd.arg("-fpermissive");
-    cmd.arg("-nostdlib");
-    // cmd.arg("-g");
-    // cmd.arg("-Os");
-    //todo dont hardcode
-    cmd.arg("-DARM_MATH_CM3");
-    cmd.arg("-DARM_CMSIS_NN_M3");
-
+    eprintln!("{:?}", cmd);
     assert!(cmd.status().expect("failed to build cmsis").success());
 }
