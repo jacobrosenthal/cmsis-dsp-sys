@@ -10,3 +10,6 @@ readme = "README.md"
 repository = "https://github.com/jacobrosenthal/cmsis-dsp-sys"
 categories = ["embedded", "hardware-support", "no-std", "math", "ffi"]
 keywords = ["dsp"]
+
+[build-dependencies]
+bindgen = "0.54.1"

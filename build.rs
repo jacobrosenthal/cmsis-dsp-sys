@@ -1,3 +1,4 @@
+use bindgen::builder;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -64,29 +65,29 @@ fn main() {
     );
     println!("cargo:rustc-link-lib=static={}", lib);
 
-    let mut cmd = Command::new("bindgen");
-    //bindgen args
-    cmd.arg("wrapper.h");
-    cmd.arg("--verbose");
-    cmd.arg("--no-derive-default");
-    cmd.arg("--ctypes-prefix=cty");
-    cmd.arg("--use-core");
-    cmd.arg("--output");
-    cmd.arg(outdir.join("bindings.rs"));
+    let bb = builder()
+        .header("wrapper.h")
+        .derive_default(false)
+        .ctypes_prefix("cty")
+        .use_core()
+        .generate_comments(true)
+        .rustfmt_bindings(true)
+        .clang_arg(format!("-I{}", manifest_dir.join("include").display()))
+        .clang_arg(format!(
+            "-I{}",
+            outdir.join("CMSIS/CMSIS/Core/Include").display()
+        ))
+        .clang_arg(format!(
+            "-I{}",
+            outdir.join("CMSIS/CMSIS/DSP/Include").display()
+        ))
+        .clang_arg("-nostdinc");
 
-    //clang args
-    cmd.arg("--");
-    cmd.arg(format!("-I{}", manifest_dir.join("include").display()));
-    cmd.arg(format!(
-        "-I{}",
-        outdir.join("CMSIS/CMSIS/Core/Include").display()
-    ));
-    cmd.arg(format!(
-        "-I{}",
-        outdir.join("CMSIS/CMSIS/DSP/Include").display()
-    ));
-    cmd.arg("-nostdinc");
-
+    let cmd = bb.command_line_flags().join(" ");
     eprintln!("{:?}", cmd);
-    assert!(cmd.status().expect("failed to build cmsis").success());
+
+    let bindings = bb.generate().expect("Unable to generate bindings");
+    bindings
+        .write_to_file(outdir.join("bindings.rs"))
+        .expect("Couldn't write bindings!");
 }
