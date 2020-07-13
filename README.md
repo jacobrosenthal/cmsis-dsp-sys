@@ -5,6 +5,7 @@ rust bindings for the prebuilt cmsis-dsp math
 ## prereqs
 
 None. Downloads the cmsis math pack file during build.
+But requires -Z features=host_dep nightly feature flag to get that done so make sure to do something like `cargo +nightly build -Z features=host_dep ...`
 
 ## usage
 

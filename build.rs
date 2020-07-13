@@ -3,7 +3,6 @@ use reqwest::blocking;
 use std::env;
 use std::fs::File;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
@@ -13,22 +12,20 @@ fn main() {
     let outdir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     let filepath = outdir.join("CMSIS.zip");
-    let mut file = File::create(filepath.clone()).unwrap();
-    blocking::get(
-        "https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack",
-    )
-    .unwrap()
-    .copy_to(&mut file)
-    .unwrap();
+    {
+        let mut file = File::create(filepath.clone()).unwrap();
+        blocking::get(
+            "https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack",
+        )
+        .unwrap()
+        .copy_to(&mut file)
+        .unwrap();
+    }
 
-    Command::new("unzip")
-        .args(&[
-            filepath.to_str().unwrap(),
-            "-d",
-            outdir.join("CMSIS").to_str().unwrap(),
-        ])
-        .output()
-        .expect("unzip CMSIS failed");
+    let file = File::open(filepath).unwrap();
+
+    let mut archive = zip::ZipArchive::new(file).unwrap();
+    archive.extract(outdir.join("CMSIS")).unwrap();
 
     let manifest_dir = Path::new(&manifest);
 
