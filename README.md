@@ -4,11 +4,7 @@ rust bindings for the prebuilt cmsis-dsp math
 
 ## prereqs
 
-Until [5730](https://github.com/rust-lang/cargo/issues/5730) is solved some day currently requires three commands to be present. I'd be happy to take requests to swap them around to that works well across platforms.
-
-* `unzip`
-* `curl`
-* `bindgen`
+None. Downloads the cmsis math pack file during build.
 
 ## usage
 

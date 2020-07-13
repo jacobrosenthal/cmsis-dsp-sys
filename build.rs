@@ -1,5 +1,7 @@
 use bindgen::builder;
+use reqwest::blocking;
 use std::env;
+use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -10,20 +12,18 @@ fn main() {
     let manifest = env::var("CARGO_MANIFEST_DIR").unwrap();
     let outdir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
-    // todo pure rust or make sure to use cross platform commands
-    Command::new("curl")
-        .args(&[
-            "-L",
-            "https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack",
-            "--output",
-            outdir.join("CMSIS.zip").to_str().unwrap(),
-        ])
-        .output()
-        .expect("curl CMSIS failed");
+    let filepath = outdir.join("CMSIS.zip");
+    let mut file = File::create(filepath.clone()).unwrap();
+    blocking::get(
+        "https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack",
+    )
+    .unwrap()
+    .copy_to(&mut file)
+    .unwrap();
 
     Command::new("unzip")
         .args(&[
-            outdir.join("CMSIS.zip").to_str().unwrap(),
+            filepath.to_str().unwrap(),
             "-d",
             outdir.join("CMSIS").to_str().unwrap(),
         ])
