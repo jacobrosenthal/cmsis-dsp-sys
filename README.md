@@ -2,13 +2,11 @@
 
 rust bindings for the prebuilt cmsis-dsp math
 
+Note downloads ~100mb [CMSIS_5](https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack) during build phase in order select and link the correct math.lib
+
 ## prereqs
 
-Until [5730](https://github.com/rust-lang/cargo/issues/5730) is solved some day currently requires three commands to be present. I'd be happy to take requests to swap them around to that works well across platforms.
-
-* `unzip`
-* `curl`
-* `bindgen`
+Rust 1.51.0 for resolver 2
 
 ## usage
 
