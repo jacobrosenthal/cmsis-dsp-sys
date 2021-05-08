@@ -1,6 +1,6 @@
 [package]
 name = "cmsis-dsp-sys"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Jacob Rosenthal <jacobrosenthal@gmail.com>"]
 edition = "2018"
 links = "cmsis-dsp"
