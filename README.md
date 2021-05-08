@@ -2,10 +2,11 @@
 
 rust bindings for the prebuilt cmsis-dsp math
 
+Note downloads ~100mb [CMSIS_5](https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack) during build phase in order select and link the correct math.lib
+
 ## prereqs
 
-None. Downloads the cmsis math pack file during build.
-But requires -Z features=host_dep nightly feature flag to get that done so make sure to do something like `cargo +nightly build -Z features=host_dep ...`
+Rust 1.51.0 for resolver 2
 
 ## usage
 

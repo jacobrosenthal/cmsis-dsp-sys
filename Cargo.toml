@@ -10,13 +10,15 @@ readme = "README.md"
 repository = "https://github.com/jacobrosenthal/cmsis-dsp-sys"
 categories = ["embedded", "hardware-support", "no-std", "math", "ffi"]
 keywords = ["dsp"]
+resolver = "2"
+
+[dependencies]
+cty = "0.2.1"
 
 [build-dependencies]
-zip = { git = "https://github.com/mvdnes/zip-rs", default-features = false, features = [
-    "deflate"
-] }
-bindgen = "0.54.1"
-reqwest = { version = "0.10.6", default-features = false, features = [
+zip = { default-features = false, features = ["deflate"] }
+bindgen = "0.58.1"
+reqwest = { version = "0.11.3", default-features = false, features = [
     "blocking",
     "default-tls"
 ] }
