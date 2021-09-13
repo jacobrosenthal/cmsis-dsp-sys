@@ -6,7 +6,8 @@ Note downloads ~100mb [CMSIS_5](https://github.com/ARM-software/CMSIS_5/releases
 
 ## prereqs
 
-Rust 1.51.0 for resolver 2
+* Rust edition 2021 or Rust >=1.51 with [resolver set to 2](https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2)
+* [bindgen requirements (llvm/clang)](https://github.com/rust-lang/rust-bindgen/blob/master/book/src/requirements.md)
 
 ## usage
 
