@@ -15,7 +15,8 @@ fn main() {
     {
         let mut file = File::create(filepath.clone()).unwrap();
         blocking::get(
-            "https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack",
+            // "https://github.com/ARM-software/CMSIS_5/releases/download/5.7.0/ARM.CMSIS.5.7.0.pack",
+            "https://github.com/ARM-software/CMSIS_5/releases/download/5.9.0/ARM.CMSIS.5.9.0.pack"
         )
         .unwrap()
         .copy_to(&mut file)
@@ -52,6 +53,8 @@ fn main() {
         "thumbv7em-none-eabi" => "arm_cortexM4l_math",
         //Bare Cortex-M4F, M7F, FPU, hardfloat
         "thumbv7em-none-eabihf" => "arm_cortexM4lf_math",
+        //Bare Cortex-M8F, 4M8F, FPU, hardfloat
+        "thumbv8m.main-none-eabihf" => "arm_cortexM4lf_math",
         _ => panic!("no known arm math library for target {}", target),
     };
 
